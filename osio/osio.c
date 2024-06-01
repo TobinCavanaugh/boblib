@@ -17,7 +17,6 @@ u0 io_printc(char c) {
     write(stdout, &c, 1);
 }
 
-
 u0 io_printu64(u64 value) {
     static char tmpBuf[22] = {0};
 

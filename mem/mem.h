@@ -9,4 +9,10 @@
 
 void *halloc(u64 size);
 
+
+#define salloc(size) ({ \
+    u8 _salloc_data[size] = {0}; \
+    _salloc_data;                   \
+    })                      \
+
 #endif //BOBLIB_MEM_H

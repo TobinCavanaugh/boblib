@@ -23,11 +23,21 @@ void *halloc(u64 size) {
     return HeapAlloc(heapHandle, 0x0, size);
 }
 
+
+void *hrealloc(void *ptr, u64 size) {
+    if (heapHandle == NULL) {
+
+        void * dat = halloc(size);
+        memcpy
+    }
+}
+
 u0 hfree(void *source) {
     if (source != 0) {
         HeapFree(heapHandle, 0x0, source);
     }
 }
+
 
 u0 memcopy(void *destination, void *source, u64 len) {
     if (len == 0) {
@@ -37,12 +47,12 @@ u0 memcopy(void *destination, void *source, u64 len) {
     int offset = 0;
     while (len % 32 == 0) {
 
-        __m256i load = _mm256_store_si256((__m256i *) source);
+//        __m256i load = _mm256_store_si256((__m256i *) source);
         len -= 32;
         offset += 32;
     }
 
-    for(; len > 0; len--){
+    for (; len > 0; len--) {
 
         offset++;
     }
