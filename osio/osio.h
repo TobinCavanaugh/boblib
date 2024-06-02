@@ -7,7 +7,7 @@
 
 #include "../bstr.h"
 
-#define stdout 1
+#define stdout (1)
 
 u0 io_prints(bstr str);
 
@@ -17,5 +17,8 @@ u0 io_printsln(bstr str);
 
 u0 io_println();
 
+u0 io_printCs(char *str);
+
+u0 io_printc(char c);
 
 #endif //BOBLIB_OSIO_H

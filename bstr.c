@@ -2,7 +2,6 @@
 // Created by tobin on 5/31/2024.
 //
 
-#include <assert.h>
 #include "bstr.h"
 #include "mem/mem.h"
 

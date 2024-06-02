@@ -5,7 +5,6 @@
 #ifndef BOBLIB_OS_H
 #define BOBLIB_OS_H
 
-#define SYSTEM_OS
 #define OS_WIN 0
 #define OS_POSIX 1
 

@@ -9,6 +9,8 @@
 
 void *halloc(u64 size);
 
+u0 memcopy(void *destination, void *source, u64 len);
+
 
 #define salloc(size) ({ \
     u8 _salloc_data[size] = {0}; \

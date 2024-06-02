@@ -9,8 +9,13 @@ u0 io_prints(bstr str) {
     if (str.char_arr != NULL) {
         write(stdout, str.char_arr, bstr_len(str));
     }
+
 //    const char nullterm = '\0';
 //    write(stdout, &nullterm, 1);
+}
+
+u0 io_printCs(char *str) {
+    write(stdout, str, internal_C_strlen(str));
 }
 
 u0 io_printc(char c) {

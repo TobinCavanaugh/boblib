@@ -12,7 +12,9 @@
 #endif
 
 u64 os_get_page_size() {
+#if SYSTEM_OS == OS_WIN
     SYSTEM_INFO sysInfo;
     GetSystemInfo(&sysInfo);
     return sysInfo.dwPageSize;
+#endif
 }
