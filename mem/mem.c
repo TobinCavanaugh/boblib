@@ -60,14 +60,12 @@ void *halloc(u64 size) {
     }
     return HeapAlloc(heapHandle, 0x0, size);
 #else
-
     //TODO implement LINUX alloc
 //    syscall(SYS_ALL)
 //    sbrk()
 #endif
 
     return malloc(size);
-
 }
 
 
@@ -77,9 +75,8 @@ void *hrealloc(void *ptr, u64 size) {
         return halloc(size);
     }
     return HeapRealloc(heapHandle, 0x0, size);
-}
 #endif
-
+    return realloc(ptr, size);
 }
 
 u0 hfree(void *source) {
@@ -99,7 +96,7 @@ u0 memcopy(void *destination, void *source, u64 len) {
     int offset = 0;
     u8 avxSize = 64;
 
-#if __AVX2__
+#if __AVX512F__
     while (len >= avxSize) {
         io_printCs("avx");
         __m512i load = _mm512_loadu_epi64(source + offset);
