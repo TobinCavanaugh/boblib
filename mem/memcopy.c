@@ -2,9 +2,33 @@
 // Created by tobin on 6/3/2024.
 //
 
-#include "memcopy.h"
+/* NOTES:
+ * PERFORMANCE ===============================================================
+ * 2024/06/03| we are operating at ~9920us for 100k iterations of 1800B
+ * copying, this is ~2.5 times slower than native malloc implementation.
+ *
+ * SIMD ======================================================================
+ * SIMD intrinsics don't seem to provide any significant performance, at least
+ * during my testing with SSE on my Ryzen 7 2700x. I'll need to check on
+ * laptop to see if AVX512F has a significant improvement, however I kinda
+ * doubt it, and I assume this code is just loading this stuff into L1 cache
+ * anyways, and the overhead of loading into registers is slower than L1. This
+ * was the case even when unrolling the loops up to 128B.
+ *
+ * Casting ===================================================================
+ * Interpreting the data array as a block and operating on that array is MUCH
+ * slower than doing inline casting. Doesn't make sense to me but thems the
+ * brakes.
+ *
+ * Memcpy ====================================================================
+ * Theres a thing called __builtin_memcpy where it just uses the compilers
+ * implementation of memcpy. While this is faster, I'd count that as using the
+ * libC implementation, so as such it will not be used here.
+ *
+ */
 
-#include <immintrin.h>
+
+#include "memcopy.h"
 
 #define MEMCOPY_INSTRUCTION_DEBUG 0
 
@@ -14,184 +38,59 @@
 
 #endif
 
+inline void print_instruction_debug_message(char *message) {
+#if MEMCOPY_INSTRUCTION_DEBUG
+    io_printCs(message);
+#endif
+}
+
+
+//We need this to make pasting the type and the comma together easier
+#define PASTE_SEQ(seq) #seq
+
+//Horrifying macro for generating a casting for loop for a sized type.
+#define MEMCOPY_FOR(dest, source, offset, len, type)                        \
+for(; len >= sizeof(type); len -= sizeof(type)) {                           \
+    /*
+    Debug printing function, this should get entirely optimized out when
+    MEMCOPY_INSTRUCTION_DEBUG is 0
+    */                                                                      \
+    print_instruction_debug_message(PASTE_SEQ(type) ",");                   \
+                                                                            \
+    /*We do a cast of both sides to */                                      \
+    *((type*) (dest + offset)) = *((type *) (source + offset));             \
+    offset += sizeof(type);                                                 \
+}
+
 u0 memcopy(void *destination, void *source, u64 len) {
-    if (len == 0) {
-        return;
-    }
-
-//    __builtin_memcpy(destination, source, len);
-//    return;
-
-    int offset = 0;
-
-#if __AVX512F__
-    {
-        const u8 avxSize = 64;
-        while (len >= avxSize) {
-#if MEMCOPY_INSTRUCTION_DEBUG
-            io_printCs("avx512,");
-#endif
-            _mm512_storeu_epi64(destination + offset, _mm512_loadu_epi64(source + offset));
-            len -= avxSize;
-            offset += avxSize;
-        }
-    }
-#endif
-
-
-#if __AVX__
-    {
-        const u8 avxSize = 32;
-        while (len >= avxSize) {
-#if MEMCOPY_INSTRUCTION_DEBUG
-            io_printCs("avx256,");
-#endif
-            _mm256_storeu_si256(destination + offset, _mm256_loadu_si256(source + offset));
-            len -= avxSize;
-            offset += avxSize;
-        }
-    }
-#endif
-
-
-#if 0// __SSE2__ || __SSE3__
-    {
-
-        //TODO Duffs device??
-        //Note: Spent ~20 mins trying duffs device but no luck,
-        //need to sit down and give it a genuine shot. Sadly uprof
-        //on amd just crashes, so i cant really profile this to see
-        //what most of the time is being eaten up by.
-
-        const u8 sseSize = 16;
-
-        __m128i _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k, _l, _m, _n, _o, _p;
-
-        //Does 256B at a time, loop unrolling me feel like a noob
-        while (len >= sseSize * 16) {
-#if MEMCOPY_INSTRUCTION_DEBUG
-            io_printCs("sse256B,");
-#endif
-            const __m128i *sourceDef = (const __m128i *) (source + offset);
-            __m128i *destDef = ((__m128i *) (destination + offset));
-
-            _a = _mm_loadu_si128(sourceDef + 0);
-            _b = _mm_loadu_si128(sourceDef + 1);
-            _c = _mm_loadu_si128(sourceDef + 2);
-            _d = _mm_loadu_si128(sourceDef + 3);
-            _e = _mm_loadu_si128(sourceDef + 4);
-            _f = _mm_loadu_si128(sourceDef + 5);
-            _g = _mm_loadu_si128(sourceDef + 6);
-            _h = _mm_loadu_si128(sourceDef + 7);
-            _i = _mm_loadu_si128(sourceDef + 8);
-            _j = _mm_loadu_si128(sourceDef + 9);
-            _k = _mm_loadu_si128(sourceDef + 10);
-            _l = _mm_loadu_si128(sourceDef + 11);
-            _m = _mm_loadu_si128(sourceDef + 12);
-            _n = _mm_loadu_si128(sourceDef + 13);
-            _o = _mm_loadu_si128(sourceDef + 14);
-            _p = _mm_loadu_si128(sourceDef + 15);
-
-            _mm_prefetch(source + 256, _MM_HINT_NTA);
-
-            _mm_storeu_si128(destDef + 0, _a);
-            _mm_storeu_si128(destDef + 1, _b);
-            _mm_storeu_si128(destDef + 2, _c);
-            _mm_storeu_si128(destDef + 3, _d);
-            _mm_storeu_si128(destDef + 4, _e);
-            _mm_storeu_si128(destDef + 5, _f);
-            _mm_storeu_si128(destDef + 6, _g);
-            _mm_storeu_si128(destDef + 7, _h);
-            _mm_storeu_si128(destDef + 8, _i);
-            _mm_storeu_si128(destDef + 9, _j);
-            _mm_storeu_si128(destDef + 10, _k);
-            _mm_storeu_si128(destDef + 11, _l);
-            _mm_storeu_si128(destDef + 12, _m);
-            _mm_storeu_si128(destDef + 13, _n);
-            _mm_storeu_si128(destDef + 14, _o);
-            _mm_storeu_si128(destDef + 15, _p);
-
-            offset += 256;
-            len -= 256;
-        }
-
-        //Does 16B at _a time
-        while (len >= sseSize) {
-#if MEMCOPY_INSTRUCTION_DEBUG
-            io_printCs("sse16B,");
-#endif
-            _mm_storeu_si128(destination + offset, _mm_loadu_si128(source + offset));
-            len -= sseSize;
-            offset += sseSize;
-
-        }
-    }
-#endif
 
     typedef struct {
         u64 _a, _b, _c, _d;
     } block32B;
 
     typedef struct {
-        block32B _a, _b, _c, _d, _e, _f, _g, _h;
+        block32B _a, _b, _c, _d;
+    } block128B;
+
+    typedef struct {
+        block128B _a, _b;
     } block256B;
+
+    typedef struct {
+        block256B _a, _b;
+    } block512B;
 
     typedef struct {
         block256B _a, _b, _c, _d;
     } block1024B;
 
+    int offset = 0;
 
-    for (; len >= sizeof(block1024B); len -= sizeof(block1024B)) {
-#if MEMCOPY_INSTRUCTION_DEBUG
-        io_printCs("b1024B,");
-#endif
-        *((block1024B *) (destination + offset)) = *((block1024B *) (source + offset));
-        offset += sizeof(block1024B);
-    }
-
-    for (; len >= sizeof(block256B); len -= sizeof(block256B)) {
-#if MEMCOPY_INSTRUCTION_DEBUG
-        io_printCs("b256B,");
-#endif
-        *((block256B *) (destination + offset)) = *((block256B *) (source + offset));
-        offset += sizeof(block256B);
-    }
-
-    for (; len >= sizeof(block32B); len -= sizeof(block32B)) {
-#if MEMCOPY_INSTRUCTION_DEBUG
-        io_printCs("b32B,");
-#endif
-        *((block32B *) (destination + offset)) = *((block32B *) (source + offset));
-        offset += sizeof(block32B);
-    }
-
-    // 8 byte chunks
-    for (; len >= sizeof(u64); len -= sizeof(u64)) {
-
-#if MEMCOPY_INSTRUCTION_DEBUG
-        io_printCs("u64b,");
-#endif
-        *((u64 *) (destination + offset)) = *((u64 *) (source + offset));
-        offset += sizeof(u64);
-    }
-
-    //4 byte chunks
-    for (; len >= sizeof(u32); len -= sizeof(u32)) {
-
-#if MEMCOPY_INSTRUCTION_DEBUG
-        io_printCs("u32b,");
-#endif
-        *((u32 *) (destination + offset)) = *((u32 *) (source + offset));
-        offset += sizeof(u32);
-    }
-
-    //Individual bytes
-    for (; len > 0; len--) {
-
-#if MEMCOPY_INSTRUCTION_DEBUG
-        io_printCs("it,");
-#endif
-        ((u8 *) destination)[offset] = ((u8 *) source)[offset];
-        offset++;
-    }
+    MEMCOPY_FOR(destination, source, offset, len, block1024B);
+    MEMCOPY_FOR(destination, source, offset, len, block512B);
+    MEMCOPY_FOR(destination, source, offset, len, block256B);
+    MEMCOPY_FOR(destination, source, offset, len, block128B);
+    MEMCOPY_FOR(destination, source, offset, len, block32B);
+    MEMCOPY_FOR(destination, source, offset, len, u64);
+    MEMCOPY_FOR(destination, source, offset, len, u8);
 }
