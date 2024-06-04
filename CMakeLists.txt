@@ -4,7 +4,7 @@ project(boblib C)
 set(CMAKE_C_STANDARD 90)
 # -mavx512f
 #.....................................................[TEMPORARY UNTIL io_printf128]
-set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG -D__USE_MINGW_ANSI_STDIO")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Wall -std=c89 -D_DEBUG -D__USE_MINGW_ANSI_STDIO")
 
 #set(CMAKE_C_COMPILER gcc)
 add_executable(boblib
@@ -22,7 +22,7 @@ add_executable(boblib
 
         sw.h
 
-        mem/memcopy.c mem/memcopy.h
+        mem/mem_copy.c mem/mem_copy.h
 
         rnd/rnd.c rnd/rnd.h
 

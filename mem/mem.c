@@ -6,66 +6,36 @@
 #include "../os.h"
 #include "mem.h"
 
-#include "memcopy.h"
+#include "mem_copy.h"
 #include "../osio/osio.h"
 
 #if SYSTEM_OS == OS_WIN
-
 #include <memoryapi.h>
-
 #else
-
 #include <unistd.h>
 #include <sys/syscall.h>
-
 #endif
 
-
-//O(n) for memory block access is pretty shit
-//Maybe i should split blocks based on boundaries
-//of some sort??
-
-//Maybe a fixed table of pointers to heap blocks?
-
-//heap block includes cursor and number of active allocations
-
-
-//halloc steps:
-//check current block, 4096 - cursor + alignment >= size
-//if so, just plop our data in
-//if not, store this block, move onto next block and check that, if we cant find an open block to the right
-//wrap around to the first block, check up until we reach our stored block.
-//if these are all full, jump to the last block and heap alloc a new block
-
-//Steps:
-//1. check block
-//
-
-
-#define ALLOCATION_SIZE 1024
-
+/// This datastructure handles our freed heap blocks
 typedef struct heap_block
 {
-    char sign[8];
     u64 size;
     struct heap_block* next;
 } heap_block;
 
+/// The start of our heap blocks
 static heap_block head = {0};
+
+/// The alignment of our memory, this aligns to 16B boundaries
 static const u64 alignment = 16;
+
+/// The amount of data allocated on the heap
 static u64 total_heap_allocation = 0;
 
-u64 mem_get_total_heap_alloc()
-{
-    return total_heap_allocation;
-}
-
-// #if SYSTEM_OS == OS_WIN
-// HANDLE heapHandle = NULL;
-// #endif
-
-//Adapted from Sylvain Defresne
-//https://stackoverflow.com/a/5422447/21769995
+/// The boblib counterpart to malloc. Performs a heap allocation.
+/// Use mem_hfree to free memory allocated by this
+/// Adapted from Sylvain Defresne:
+/// https://stackoverflow.com/a/5422447/21769995
 void* mem_halloc(u64 size)
 {
     //Round size to the nearest power of two, only works if alignment is a pow of two
@@ -82,7 +52,6 @@ void* mem_halloc(u64 size)
         {
             //We set the next of our head to the block we found
             *headptr = newBlock->next;
-            memcopy(newBlock->sign, "~~~~~~~", 8);
             total_heap_allocation += size;
             return (u8*)newBlock + sizeof(heap_block);
         }
@@ -94,23 +63,31 @@ void* mem_halloc(u64 size)
         newBlock = newBlock->next;
     }
 
-#if SYSTEM_OS == OS_WIN
     //TODO This is not ideal afaik
-    newBlock = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
-    newBlock->size = size;
+#if SYSTEM_OS == OS_WIN
+    newBlock = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 #elif
     newBlock = (heap_block*) sbrk(size);
-    newBlock->size = size;
 #endif
 
-    memcopy(newBlock->sign, "+++++++", 8);
+    if (newBlock == NULL)
+    {
+        return NULL;
+    }
+    newBlock->size = size;
+
     total_heap_allocation += newBlock->size;
 
     return ((u8*)newBlock) + sizeof(heap_block);
 }
 
+/// Frees memory allocated on the heap by mem_halloc()
+/// @param ptr The pointer to the data of the block to be freed.
 u0 mem_hfree(void* ptr)
 {
+    //TODO If the pointer isn't to the start of the memory block this will fail,
+    //that sucks.
+
     heap_block* block = (heap_block*)((u8*)ptr - sizeof(heap_block));
     block->next = head.next;
     head.next = block;
@@ -126,25 +103,29 @@ u0 mem_hfree(void* ptr)
     }
 }
 
+/// Reallocates the heap block at ptr to a new block of size.
+/// @param ptr The pointer to the heap block data
+/// @param size The size of the reallocation
+/// @return Returning NULL is the failure state, where no state changes
 void* mem_hrealloc(void* ptr, u64 size)
 {
-    // #if SYSTEM_OS == OS_WIN
-    // if (heapHandle == NULL)
-    // {
-    // return halloc(size);
-    // }
-    // return HeapReAlloc(heapHandle, 0x0, ptr, size);
-    // #endif
-    // return realloc(ptr, size);
-    // }
+    void* new = mem_halloc(size);
+    if (new == NULL)
+    {
+        return NULL;
+    }
 
-    // u0 hfree(void* source)
-    // {
-    // #if SYSTEM_OS == OS_WIN
-    // if (source != 0)
-    // {
-    // HeapFree(heapHandle, 0x0, source);
-    // }
-    // #endif
-    return NULL;
+    heap_block* current = (heap_block*)((u8*)ptr - sizeof(heap_block));
+    mem_copy(new, ptr, current->size);
+
+    mem_hfree(ptr);
+
+    return new;
+}
+
+/// Get the current amount of heap allocated bytes
+/// @return The amount of bytes
+u64 mem_get_total_heap_alloc()
+{
+    return total_heap_allocation;
 }

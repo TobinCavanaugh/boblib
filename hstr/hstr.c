@@ -26,9 +26,9 @@ u64 internal_C_strlen(char* data)
 
 u0 hstr_set_end(hstr* str, u64 len)
 {
-    bassert(str->end_ptr != NULL);
     bassert(str->char_arr != NULL);
     str->end_ptr = str->char_arr + len;
+    bassert(str->end_ptr != NULL);
 }
 
 u64 hstr_len(hstr* str)
@@ -51,7 +51,6 @@ u0 hstr_appendC(hstr* str, char* add)
 
 
 //strop(string, operation, args)
-
 
 
 hstr* hstr_create(char* source)

@@ -14,13 +14,6 @@ typedef struct
 } hstr;
 
 
-#define str_append(base, value) \
-    _Generic((value), \
-        char*: hstr_appendC, \
-        hstr*: hstr_append,\
-        hstr: hstr_appendL, \
-    (base, default)
-
 #define HSTR(str) hstr_create(str)
 
 u64 internal_C_strlen(char* data);
