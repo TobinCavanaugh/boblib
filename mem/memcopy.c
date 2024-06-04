@@ -2,6 +2,7 @@
 // Created by tobin on 6/3/2024.
 //
 
+///
 /* NOTES:
  * PERFORMANCE ===============================================================
  * 2024/06/03| we are operating at ~9920us for 100k iterations of 1800B
@@ -38,7 +39,8 @@
 
 #endif
 
-inline void print_instruction_debug_message(char *message) {
+inline void print_instruction_debug_message(char* message)
+{
 #if MEMCOPY_INSTRUCTION_DEBUG
     io_printCs(message);
 #endif
@@ -62,25 +64,30 @@ for(; len >= sizeof(type); len -= sizeof(type)) {                           \
     offset += sizeof(type);                                                 \
 }
 
-u0 memcopy(void *destination, void *source, u64 len) {
-
-    typedef struct {
+u0 memcopy(const void* destination, const void* source, u64 len)
+{
+    typedef struct
+    {
         u64 _a, _b, _c, _d;
     } block32B;
 
-    typedef struct {
+    typedef struct
+    {
         block32B _a, _b, _c, _d;
     } block128B;
 
-    typedef struct {
+    typedef struct
+    {
         block128B _a, _b;
     } block256B;
 
-    typedef struct {
+    typedef struct
+    {
         block256B _a, _b;
     } block512B;
 
-    typedef struct {
+    typedef struct
+    {
         block256B _a, _b, _c, _d;
     } block1024B;
 

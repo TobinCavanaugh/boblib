@@ -5,54 +5,80 @@
 #include <unistd.h>
 #include "osio.h"
 
-u0 io_prints(bstr str) {
-    if (str.char_arr != NULL) {
-        write(stdout, str.char_arr, bstr_len(str));
+u64 output = stdout;
+
+u0 io_prints(hstr* str)
+{
+    if (str->char_arr != NULL)
+    {
+        write(output, str->char_arr, hstr_len(str));
     }
 
-//    const char nullterm = '\0';
-//    write(stdout, &nullterm, 1);
+    //    const char nullterm = '\0';
+    //    write(stdout, &nullterm, 1);
 }
 
-u0 io_printCs(char *str) {
-    write(stdout, str, internal_C_strlen(str));
+u0 io_printCs(char* str)
+{
+    write(output, str, internal_C_strlen(str));
 }
 
-u0 io_printc(char c) {
-    write(stdout, &c, 1);
+u0 io_printc(char c)
+{
+    write(output, &c, 1);
 }
 
-u0 io_printu64(u64 value) {
+u0 io_printf128(f128 value)
+{
+    if (value == 0)
+    {
+        io_printCs('0.000');
+    }
+}
+
+u0 io_printu64(u64 value)
+{
+    if (value == 0)
+    {
+        io_printc('0');
+        return;
+    }
+
     static char tmpBuf[22] = {0};
 
     const int base = 10;
     int i = 22;
 
-
-    for (; value && i; --i, value /= base) {
+    for (; value && i; --i, value /= base)
+    {
+        //"0123456789abcedf"
         tmpBuf[i] = "0123456789abcedf"[value % base];
     }
 
-    char *string = &tmpBuf[i + 1];
+    char* string = &tmpBuf[i + 1];
 
-    write(stdout, string, internal_C_strlen(string));
+    write(output, string, internal_C_strlen(string));
 }
 
-u0 io_printi64(i64 value) {
-    if (value < 0) {
+u0 io_printi64(i64 value)
+{
+    if (value < 0)
+    {
         char sign = '-';
-        write(stdout, &sign, 1);
+        write(output, &sign, 1);
         value *= -1;
     }
 
     io_printu64(value);
 }
 
-u0 io_printsln(bstr str) {
+u0 io_printsln(hstr* str)
+{
     io_prints(str);
     io_printc('\n');
 }
 
-u0 io_println() {
+u0 io_println()
+{
     io_printc('\n');
 }

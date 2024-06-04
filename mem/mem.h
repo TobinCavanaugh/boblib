@@ -1,20 +1,22 @@
 //
 // Created by tobin on 5/31/2024.
 //
+#include "../bint.h"
 
 #ifndef BOBLIB_MEM_H
 #define BOBLIB_MEM_H
 
-#include "../bint.h"
 
-void *halloc(u64 size);
+u64 mem_get_total_heap_alloc();
 
-u0 memcopy(void *destination, void *source, u64 len);
+void* mem_halloc(u64 size);
 
+u0 mem_hfree(void* source);
 
-#define salloc(size) ({ \
+void* mem_hrealloc(void* ptr, u64 size);
+
+#define mem_salloc(size) ({ \
     u8 _salloc_data[size] = {0}; \
     _salloc_data;                   \
-    })                      \
-
+    })
 #endif //BOBLIB_MEM_H

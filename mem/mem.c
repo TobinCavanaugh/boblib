@@ -5,11 +5,13 @@
 #include <unistd.h>
 #include "../os.h"
 #include "mem.h"
+
+#include "memcopy.h"
 #include "../osio/osio.h"
 
 #if SYSTEM_OS == OS_WIN
 
-#include <heapapi.h>
+#include <memoryapi.h>
 
 #else
 
@@ -17,8 +19,6 @@
 #include <sys/syscall.h>
 
 #endif
-
-
 
 
 //O(n) for memory block access is pretty shit
@@ -41,45 +41,110 @@
 //1. check block
 //
 
-typedef struct heap_block {
-    u8 *data;
+
+#define ALLOCATION_SIZE 1024
+
+typedef struct heap_block
+{
+    char sign[8];
+    u64 size;
+    struct heap_block* next;
 } heap_block;
 
-#if SYSTEM_OS == OS_WIN
-HANDLE heapHandle = NULL;
-#endif
+static heap_block head = {0};
+static const u64 alignment = 16;
+static u64 total_heap_allocation = 0;
 
-void *halloc(u64 size) {
-
-#if SYSTEM_OS == OS_WIN
-    if (heapHandle == NULL) {
-        heapHandle = HeapCreate(0x0, 1024, 0);
-    }
-    return HeapAlloc(heapHandle, 0x0, size);
-#else
-    //TODO implement LINUX alloc, might as well us VirtualAlloc for windows to make use of this new allocator
-//    syscall(SYS_ALL)
-//    sbrk()
-#endif
-
-    return malloc(size);
+u64 mem_get_total_heap_alloc()
+{
+    return total_heap_allocation;
 }
 
+// #if SYSTEM_OS == OS_WIN
+// HANDLE heapHandle = NULL;
+// #endif
 
-void *hrealloc(void *ptr, u64 size) {
-#if SYSTEM_OS == OS_WIN
-    if (heapHandle == NULL) {
-        return halloc(size);
+//Adapted from Sylvain Defresne
+//https://stackoverflow.com/a/5422447/21769995
+void* mem_halloc(u64 size)
+{
+    //Round size to the nearest power of two, only works if alignment is a pow of two
+    size = (size + u64_size + (alignment - 1)) & ~(alignment - 1);
+
+    heap_block* newBlock = head.next;
+    heap_block** headptr = &head.next;
+
+    //Go through all blocks
+    while (newBlock != NULL)
+    {
+        //If it has the size we need
+        if (newBlock->size >= size)
+        {
+            //We set the next of our head to the block we found
+            *headptr = newBlock->next;
+            memcopy(newBlock->sign, "~~~~~~~", 8);
+            total_heap_allocation += size;
+            return (u8*)newBlock + sizeof(heap_block);
+        }
+
+        //Set our headptr to point at the next block
+        headptr = &newBlock->next;
+
+        //Look at the next block
+        newBlock = newBlock->next;
     }
-    return HeapReAlloc(heapHandle, 0x0, ptr, size);
+
+#if SYSTEM_OS == OS_WIN
+    //TODO This is not ideal afaik
+    newBlock = VirtualAlloc(NULL, size, MEM_COMMIT, PAGE_READWRITE);
+    newBlock->size = size;
+#elif
+    newBlock = (heap_block*) sbrk(size);
+    newBlock->size = size;
 #endif
-    return realloc(ptr, size);
+
+    memcopy(newBlock->sign, "+++++++", 8);
+    total_heap_allocation += newBlock->size;
+
+    return ((u8*)newBlock) + sizeof(heap_block);
 }
 
-u0 hfree(void *source) {
-#if SYSTEM_OS == OS_WIN
-    if (source != 0) {
-        HeapFree(heapHandle, 0x0, source);
+u0 mem_hfree(void* ptr)
+{
+    heap_block* block = (heap_block*)((u8*)ptr - sizeof(heap_block));
+    block->next = head.next;
+    head.next = block;
+
+    //Prevent wrap around
+    if (total_heap_allocation - block->size >= total_heap_allocation)
+    {
+        total_heap_allocation = 0;
     }
-#endif
+    else
+    {
+        total_heap_allocation -= block->size;
+    }
+}
+
+void* mem_hrealloc(void* ptr, u64 size)
+{
+    // #if SYSTEM_OS == OS_WIN
+    // if (heapHandle == NULL)
+    // {
+    // return halloc(size);
+    // }
+    // return HeapReAlloc(heapHandle, 0x0, ptr, size);
+    // #endif
+    // return realloc(ptr, size);
+    // }
+
+    // u0 hfree(void* source)
+    // {
+    // #if SYSTEM_OS == OS_WIN
+    // if (source != 0)
+    // {
+    // HeapFree(heapHandle, 0x0, source);
+    // }
+    // #endif
+    return NULL;
 }
