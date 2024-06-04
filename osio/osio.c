@@ -30,10 +30,10 @@ u0 io_printc(char c)
 
 u0 io_printf128(f128 value)
 {
-    if (value == 0)
-    {
-        io_printCs('0.000');
-    }
+    // if (value == 0)
+    // {
+    // io_printCs();
+    // }
 }
 
 u0 io_printu64(u64 value)

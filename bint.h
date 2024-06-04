@@ -11,6 +11,7 @@
 /// Do NOT use when referring to a void *
 typedef void u0;
 
+#undef NULL
 #define NULL ((void *) 0)
 #define null NULL
 
@@ -35,8 +36,13 @@ typedef unsigned long long u64;
 #define u64_size sizeof(u64) //8
 
 typedef float f32;
+#define f32_size sizeof(f32) //4
+
 typedef double f64;
+#define f64_size sizeof(f64) //8
+
 typedef long double f128;
+#define f128_size sizeof(f128); //16
 
 typedef u8 byte;
 typedef u8 bool;
