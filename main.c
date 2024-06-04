@@ -30,6 +30,8 @@ int main()
     printf("%.17Lf\n", rnd_f128());
     printf("%.17Lf\n", rnd_f128());
 
+    hstr* a = HSTR("Hello World");
+    str_append(a, "!");
 
     //    il_while(true, io_printCs(":)"));
 
