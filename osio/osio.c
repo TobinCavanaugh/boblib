@@ -35,14 +35,13 @@ u0 io_printf128(f128 value) {
     io_printu64((u64) value);
 }
 
-u0 io_printu64(u64 value) {
-
-//    write(output, string, internal_C_strlen(string));
-}
 
 char *io_u64toS(u64 val) {
 
     char *buf = mem_halloc(22);
+
+    //TODO implement own memset
+    memset(buf, 0, 22);
 
     if (val == 0) {
         mem_copy(buf, "0", 2);
@@ -55,6 +54,15 @@ char *io_u64toS(u64 val) {
     for (; val && i; --i, val /= base) {
         buf[i] = "0123456789abcedf"[val % base];
     }
+
+    return buf + 1 + i;
+}
+
+u0 io_printu64(u64 value) {
+
+    char *string = io_u64toS(value);
+    write(output, string, internal_C_strlen(string));
+    mem_hfree(string);
 }
 
 char *io_i64toS(i64 value) {
