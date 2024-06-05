@@ -29,4 +29,7 @@ add_executable(boblib
         osio/io_numtohstr.c osio/io_numtohstr.h
 
         assert/bassert.h
-        cpu/cpuinfo.c cpu/cpuinfo.h)
+
+        cpu/cpuinfo.c cpu/cpuinfo.h
+
+)
