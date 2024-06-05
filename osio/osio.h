@@ -22,4 +22,6 @@ u0 io_printCs(char* str);
 
 u0 io_printc(char c);
 
+u0 io_printf128(f128 val);
+
 #endif //BOBLIB_OSIO_H

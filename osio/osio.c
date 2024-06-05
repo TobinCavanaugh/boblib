@@ -7,10 +7,8 @@
 
 u64 output = stdout;
 
-u0 io_prints(hstr* str)
-{
-    if (str->char_arr != NULL)
-    {
+u0 io_prints(hstr *str) {
+    if (str->char_arr != NULL) {
         write(output, str->char_arr, hstr_len(str));
     }
 
@@ -18,28 +16,24 @@ u0 io_prints(hstr* str)
     //    write(stdout, &nullterm, 1);
 }
 
-u0 io_printCs(char* str)
-{
+u0 io_printCs(char *str) {
     write(output, str, internal_C_strlen(str));
 }
 
-u0 io_printc(char c)
-{
+u0 io_printc(char c) {
     write(output, &c, 1);
 }
 
-u0 io_printf128(f128 value)
-{
-    // if (value == 0)
-    // {
-    // io_printCs();
-    // }
+u0 io_printf128(f128 value) {
+    io_printu64((u64) value);
+    io_printc('.');
+    value -= (u64) value;
+    value *= 1000000000000000000;
+    io_printu64((u64) value);
 }
 
-u0 io_printu64(u64 value)
-{
-    if (value == 0)
-    {
+u0 io_printu64(u64 value) {
+    if (value == 0) {
         io_printc('0');
         return;
     }
@@ -49,21 +43,18 @@ u0 io_printu64(u64 value)
     const int base = 10;
     int i = 22;
 
-    for (; value && i; --i, value /= base)
-    {
+    for (; value && i; --i, value /= base) {
         //"0123456789abcedf"
         tmpBuf[i] = "0123456789abcedf"[value % base];
     }
 
-    char* string = &tmpBuf[i + 1];
+    char *string = &tmpBuf[i + 1];
 
     write(output, string, internal_C_strlen(string));
 }
 
-u0 io_printi64(i64 value)
-{
-    if (value < 0)
-    {
+u0 io_printi64(i64 value) {
+    if (value < 0) {
         char sign = '-';
         write(output, &sign, 1);
         value *= -1;
@@ -72,13 +63,11 @@ u0 io_printi64(i64 value)
     io_printu64(value);
 }
 
-u0 io_printsln(hstr* str)
-{
+u0 io_printsln(hstr *str) {
     io_prints(str);
     io_printc('\n');
 }
 
-u0 io_println()
-{
+u0 io_println() {
     io_printc('\n');
 }
