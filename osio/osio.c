@@ -4,6 +4,8 @@
 
 #include <unistd.h>
 #include "osio.h"
+#include "../mem/mem_copy.h"
+#include "../mem/mem.h"
 
 u64 output = stdout;
 
@@ -15,6 +17,7 @@ u0 io_prints(hstr *str) {
     //    const char nullterm = '\0';
     //    write(stdout, &nullterm, 1);
 }
+
 
 u0 io_printCs(char *str) {
     write(output, str, internal_C_strlen(str));
@@ -33,34 +36,42 @@ u0 io_printf128(f128 value) {
 }
 
 u0 io_printu64(u64 value) {
-    if (value == 0) {
-        io_printc('0');
-        return;
-    }
 
-    static char tmpBuf[22] = {0};
+//    write(output, string, internal_C_strlen(string));
+}
+
+char *io_u64toS(u64 val) {
+
+    char *buf = mem_halloc(22);
+
+    if (val == 0) {
+        mem_copy(buf, "0", 2);
+        return buf;
+    }
 
     const int base = 10;
     int i = 22;
 
-    for (; value && i; --i, value /= base) {
-        //"0123456789abcedf"
-        tmpBuf[i] = "0123456789abcedf"[value % base];
+    for (; val && i; --i, val /= base) {
+        buf[i] = "0123456789abcedf"[val % base];
     }
-
-    char *string = &tmpBuf[i + 1];
-
-    write(output, string, internal_C_strlen(string));
 }
 
-u0 io_printi64(i64 value) {
+char *io_i64toS(i64 value) {
+
+    char *buf = mem_halloc(22);
     if (value < 0) {
         char sign = '-';
         write(output, &sign, 1);
         value *= -1;
     }
-
     io_printu64(value);
+
+    return buf;
+}
+
+u0 io_printi64(i64 value) {
+
 }
 
 u0 io_printsln(hstr *str) {
