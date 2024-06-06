@@ -137,12 +137,7 @@ u0 mem_hfree(void *ptr) {
 //        memset((u8 *) block + sizeof(heap_block), '-', block->size);
 
 #if MEM_HEAP_USE_CANARY
-        if (*GET_BLOCK_CANARY(block) != canary) {
-#if _DEBUG
-            io_printCs(
-                    "CRITICAL ERROR: Canary of heap block was overwritten, this indicates a buffer overrun.\n");
-#endif
-        }
+        bassert(*GET_BLOCK_CANARY(block) == canary);
 #endif
 
         //Prevent wrap around

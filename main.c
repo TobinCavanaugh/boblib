@@ -15,56 +15,10 @@ int main() {
 
     int max = 1000000;
 
-//    double us = sw_start_us();
-//    int i = 0;
-//    for (; i < max; i++) {
-//
-//        u8 *data = mem_halloc(128);
-//        mem_copy(data, strData, 128);
-//        mem_hfree(data);
-//    }
-//    sw_print_us(us);
-//
-//    us = sw_start_us();
-//    i = 0;
-//    for (; i < max; i++) {
-//
-//        u8 *data = malloc(128);
-//        mem_copy(data, strData, 128);
-//        free(data);
-//    }
-//    sw_print_us(us);
+    hstr *str = HSTR("ABC");
+    hstr_appendi64(str, -148912489);
+    io_prints(str);
 
-
-    io_printu64(cpu_get_feature(CF_MMX));
-    io_printu64(cpu_get_feature(CF_SSE4_1));
-    io_printu64(cpu_get_feature(CF_SSE4_2));
-    io_printu64(cpu_get_feature(CF_RDRAND));
-    io_printu64(cpu_get_feature(CF_AVX));
-    io_printu64(cpu_get_feature(CF_SMX));
-    io_printu64(cpu_get_feature(CF_TM1));
-    io_printu64(cpu_get_feature(CF_TM2));
-    io_printu64(cpu_get_feature(CF_SS));
-
-    io_println();
-
-    io_printCs(cpu_get_manufacturer_id());
-
-//    while (1) {
-//        int min = 0;
-//        int max = 100;
-//        u64 tval = (rnd_u64R(min, max));
-//
-//        io_printu64(tval);
-//        io_println();
-//
-//        if (tval < min || tval > max) {
-//            break;
-//        }
-//    }
-//    io_println();
-
-//    io_printf128(rnd_f128() * 1000000);
 
     return 0;
 }

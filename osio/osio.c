@@ -35,51 +35,67 @@ u0 io_printf128(f128 value) {
     io_printu64((u64) value);
 }
 
+char *io_f128toS(f128 val) {
 
-char *io_u64toS(u64 val) {
+}
 
-    char *buf = mem_halloc(22);
 
-    //TODO implement own memset
-    memset(buf, 0, 22);
+hstr *io_u64toS(u64 val) {
+
+    //Set the buf length to 22 characters
+    hstr *buf = HSTR("");
 
     if (val == 0) {
-        mem_copy(buf, "0", 2);
+        hstr_appendCs(buf, "0");
+//        mem_copy(buf->char_arr, "0", 2);
         return buf;
     }
 
     const int base = 10;
     int i = 22;
 
+    //add 23 chars, one extra for - sign
+    hstr_appendCs(buf, ".......................");
+
     for (; val && i; --i, val /= base) {
-        buf[i] = "0123456789abcedf"[val % base];
+        buf->char_arr[i] = "0123456789abcedf"[val % base];
     }
 
-    return buf + 1 + i;
+    //TODO IMPLEMENT CUSTOM MEMMOVE
+    memmove(buf->char_arr, buf->char_arr + i + 1, 22 - i);
+    hstr_set_end(buf, 22 - i);
+
+    return buf;
 }
 
 u0 io_printu64(u64 value) {
-
-    char *string = io_u64toS(value);
-    write(output, string, internal_C_strlen(string));
-    mem_hfree(string);
+    hstr *str = io_u64toS(value);
+    io_prints(str);
+    hstr_free(str);
 }
 
-char *io_i64toS(i64 value) {
+hstr *io_i64toS(i64 value) {
 
-    char *buf = mem_halloc(22);
+    u64 tmp = (u64) value;
     if (value < 0) {
-        char sign = '-';
-        write(output, &sign, 1);
-        value *= -1;
+        tmp = (u64) (value * -1);
     }
-    io_printu64(value);
+
+    hstr *buf = io_u64toS(tmp);
+
+    if (value < 0) {
+        memmove(buf->char_arr + 1, buf->char_arr, hstr_len(buf));
+        buf->end_ptr++;
+        buf->char_arr[0] = '-';
+    }
 
     return buf;
 }
 
 u0 io_printi64(i64 value) {
-
+    hstr *str = io_i64toS(value);
+    io_prints(str);
+    hstr_free(str);
 }
 
 u0 io_printsln(hstr *str) {
