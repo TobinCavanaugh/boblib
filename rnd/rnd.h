@@ -12,6 +12,8 @@ u32 rnd_u32();
 
 u64 rnd_u64();
 
+f128 rnd_f128R(f128 min, f128 max);
+
 u64 rnd_u64R(u64 min, u64 max);
 
 f128 rnd_f128();

@@ -27,6 +27,10 @@ u0 io_printc(char c) {
     write(output, &c, 1);
 }
 
+u0 io_printf128_pro(f128 value, u8 decimals) {
+
+}
+
 u0 io_printf128(f128 value) {
     io_printu64((u64) value);
     io_printc('.');
@@ -35,10 +39,12 @@ u0 io_printf128(f128 value) {
     io_printu64((u64) value);
 }
 
-char *io_f128toS(f128 val) {
+hstr *io_f128toS_pro(f128 val, u8 decimals) {
+    hstr *buf = HSTR("");
+    hstr_appendu64(buf, (u64) val);
+    //TODO implement
 
 }
-
 
 hstr *io_u64toS(u64 val) {
 
@@ -84,7 +90,9 @@ hstr *io_i64toS(i64 value) {
     hstr *buf = io_u64toS(tmp);
 
     if (value < 0) {
-        memmove(buf->char_arr + 1, buf->char_arr, hstr_len(buf));
+        memmove(buf->char_arr + 1,
+                buf->char_arr, hstr_len(buf));
+
         buf->end_ptr++;
         buf->char_arr[0] = '-';
     }

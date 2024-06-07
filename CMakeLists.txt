@@ -26,10 +26,8 @@ add_executable(boblib
 
         rnd/rnd.c rnd/rnd.h
 
-        osio/io_numtohstr.c osio/io_numtohstr.h
-
         assert/bassert.h
 
         cpu/cpuinfo.c cpu/cpuinfo.h
 
-)
+        bmath/mat.c bmath/mat.h)

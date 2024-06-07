@@ -12,7 +12,6 @@ typedef struct {
     char *end_ptr;
 } hstr;
 
-
 #define HSTR(str) hstr_fromCs(str)
 
 hstr *hstr_fromCs(char *source);

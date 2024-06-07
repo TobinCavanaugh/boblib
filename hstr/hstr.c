@@ -12,7 +12,8 @@
 /* NOTES:
  * DESIGN ====================================================================
  * This could all be handled using hstr
- *
+ * TODO ======================================================================
+ * Implementing chunked strings into this would be nice
  */
 
 u64 internal_C_strlen(char *data) {

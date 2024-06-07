@@ -58,6 +58,13 @@ u64 rnd_u64R(u64 min, u64 max) {
     return (u64) v;
 }
 
+f128 rnd_f128R(f128 min, f128 max) {
+    f128 v = rnd_f128();
+    v *= (max - min);
+    v += min;
+    return v;
+}
+
 f128 rnd_f128() {
     f128 x = (f128) rnd_u64();
     f128 y = (f128) u64_max;

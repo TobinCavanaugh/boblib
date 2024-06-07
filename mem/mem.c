@@ -137,7 +137,7 @@ u0 mem_hfree(void *ptr) {
 //        memset((u8 *) block + sizeof(heap_block), '-', block->size);
 
 #if MEM_HEAP_USE_CANARY
-        bassert(*GET_BLOCK_CANARY(block) == canary);
+        bassertn(*GET_BLOCK_CANARY(block) == canary, "Canary overwritten. This indicates a buffer overflow");
 #endif
 
         //Prevent wrap around
