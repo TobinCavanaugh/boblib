@@ -55,24 +55,24 @@
 
 /// Start the microsecond timer, returns the start time
 /// @return The current timeofday in microseconds, use this as the prev arg for `sw_stop_us()`
-inline double sw_start_us() {
+static inline double sw_start_us() {
     struct timespec a;
     clock_gettime(CLOCK_MONOTONIC, &a);
     return a.tv_nsec / 1000.0 + (double) a.tv_sec * 1000.0 * 1000.0;
 }
 
 /// Stop the microsecond timer
-/// @param prev The start time from `inline double sw_start_us()`
+/// @param prev The start time from `static inline  double sw_start_us()`
 /// @return The time between stop and start in microseconds
-inline double sw_stop_us(const double prev) {
+static inline double sw_stop_us(const double prev) {
     return fabs(sw_start_us() - prev);
 }
 
 #ifdef SW_PRINT_FUNCTIONS
 
 /// Prints the elapsed seconds since prev in microseconds
-/// @param prev The start time from `inline double sw_start_us()`
-inline void sw_print_us(const double prev) {
+/// @param prev The start time from `static inline  double sw_start_us()`
+static inline void sw_print_us(const double prev) {
     printf(PRINT_US_FORMAT, sw_stop_us(prev));
 }
 
@@ -82,22 +82,22 @@ inline void sw_print_us(const double prev) {
 
 /// Start the millisecond timer, returns the start time.
 /// @return The current timeofday in milliseconds, use this as the prev arg for `sw_stop_ms()'
-inline double sw_start_ms() {
+static inline double sw_start_ms() {
     return sw_start_us() / 1000.0;
 }
 
 /// Stop the millisecond timer
-/// @param prev The start time from `inline double sw_start_ms()`
+/// @param prev The start time from `static inline  double sw_start_ms()`
 /// @return The time between stop and start in milliseconds
-inline double sw_stop_ms(const double prev) {
+static inline double sw_stop_ms(const double prev) {
     return fabs(sw_start_ms() - prev);
 }
 
 #ifdef SW_PRINT_FUNCTIONS
 
 /// Prints the elapsed seconds since prev in miliseconds
-/// @param prev The start time from `inline double sw_start_ms()`
-inline void sw_print_ms(const double prev) {
+/// @param prev The start time from `static inline  double sw_start_ms()`
+static inline void sw_print_ms(const double prev) {
     printf(PRINT_MS_FORMAT, sw_stop_ms(prev));
 }
 
@@ -107,22 +107,22 @@ inline void sw_print_ms(const double prev) {
 
 /// Start the second timer, returns the start time.
 /// @return The current timeofday in seconds, use this as the prev arg for `sw_stop_s`
-inline double sw_start_s() {
+static inline double sw_start_s() {
     return sw_start_ms() / 1000;
 }
 
 /// Stop the second timer
-/// @param prev The start time from `inline double sw_start_s()`
+/// @param prev The start time from `static inline  double sw_start_s()`
 /// @return The time between stop and start in seconds
-inline double sw_stop_s(const double prev) {
+static inline double sw_stop_s(const double prev) {
     return fabs(sw_start_s() - prev);
 }
 
 #ifdef SW_PRINT_FUNCTIONS
 
 /// Prints the elapsed seconds since prev in seconds
-/// @param prev The start time from `inline double sw_start_s()`
-inline void sw_print_s(const double prev) {
+/// @param prev The start time from `static inline  double sw_start_s()`
+static inline void sw_print_s(const double prev) {
     printf(PRINT_S_FORMAT, sw_stop_s(prev));
 }
 
@@ -134,23 +134,23 @@ inline void sw_print_s(const double prev) {
 #ifdef SW_MINUTE_FUNCTIONS
 /// Start the second timer, returns the start time.
 /// @return The current timeofday in seconds, use this as the prev arg for `sw_stop_min`
-inline double sw_start_min()
+static inline  double sw_start_min()
 {
     return sw_start_s() / 60;
 }
 
 /// Stop the second timer
-/// @param prev The start time from `inline double sw_start_min()`
+/// @param prev The start time from `static inline  double sw_start_min()`
 /// @return The time between stop and start in minutes
-inline double sw_stop_min(const double prev)
+static inline  double sw_stop_min(const double prev)
 {
     return fabs(sw_start_min() - prev);
 }
 
 #ifdef SW_PRINT_FUNCTIONS
 /// Prints the elapsed seconds since prev in mins
-/// @param prev The start time from `inline double sw_start_min()`
-inline void sw_print_min(const double prev)
+/// @param prev The start time from `static inline  double sw_start_min()`
+static inline  void sw_print_min(const double prev)
 {
     printf(PRINT_MIN_FORMAT, sw_stop_min(prev));
 }
@@ -159,8 +159,8 @@ inline void sw_print_min(const double prev)
 #endif //SW_MINUTE_FUNCTIONS
 
 #ifdef __WIN32
-HANDLE hproc = NULL;
-PROCESS_MEMORY_COUNTERS_EX pmc;
+static HANDLE hproc = NULL;
+static PROCESS_MEMORY_COUNTERS_EX pmc;
 #endif
 
 
@@ -168,7 +168,7 @@ PROCESS_MEMORY_COUNTERS_EX pmc;
 
 /// Get the current memory usage of this application
 /// @return The size of memory in bytes
-inline double sw_memory_size_b() {
+static inline double sw_memory_size_b() {
 #ifdef __WIN32
 
     if (hproc == NULL) {
@@ -191,7 +191,7 @@ inline double sw_memory_size_b() {
 #ifdef SW_PRINT_FUNCTIONS
 
 /// Gets and prints the memory usage in bytes
-inline void sw_memory_print_b() {
+static inline void sw_memory_print_b() {
     printf(PRINT_B_FORMAT, sw_memory_size_b());
 }
 
@@ -199,14 +199,14 @@ inline void sw_memory_print_b() {
 
 /// Get the current memory usage of this application
 /// @return The size of memory in kilobytes
-inline double sw_memory_size_kb() {
+static inline double sw_memory_size_kb() {
     return sw_memory_size_b() / 1000.0;
 }
 
 #ifdef SW_PRINT_FUNCTIONS
 
 /// Gets and prints the memory usage in kilobytes
-inline void sw_memory_print_kb() {
+static inline void sw_memory_print_kb() {
     printf(PRINT_KB_FORMAT, sw_memory_size_kb());
 }
 
@@ -214,14 +214,14 @@ inline void sw_memory_print_kb() {
 
 /// Get the current memory usage of this application
 /// @return The size of memory in megabytes
-inline double sw_memory_size_mb() {
+static inline double sw_memory_size_mb() {
     return sw_memory_size_kb() / 1000.0;
 }
 
 #ifdef SW_PRINT_FUNCTIONS
 
 /// Gets and prints the memory usage in megabytes
-inline void sw_memory_print_mb() {
+static inline void sw_memory_print_mb() {
     printf(PRINT_MB_FORMAT, sw_memory_size_mb());
 }
 
@@ -229,14 +229,14 @@ inline void sw_memory_print_mb() {
 
 /// Get the current memory usage of this application
 /// @return The size of memory in gigabytes
-inline double sw_memory_size_gb() {
+static inline double sw_memory_size_gb() {
     return sw_memory_size_mb() / 1000.0;
 }
 
 #ifdef SW_PRINT_FUNCTIONS
 
 /// Gets and prints the memory usage in gigabytes
-inline void sw_memory_print_gb() {
+static inline void sw_memory_print_gb() {
     printf(PRINT_GB_FORMAT, sw_memory_size_gb());
 }
 
@@ -247,7 +247,7 @@ inline void sw_memory_print_gb() {
 
 /// Prints the memory usage with the correct formatting in the ideal size.
 /// i.e. doesnt print 1000 bytes as "1000b" but as "1mb"
-inline void sw_memory_print_auto() {
+static inline void sw_memory_print_auto() {
     const double size = sw_memory_size_b();
     if (size < 1000) {
         printf(PRINT_B_FORMAT, size);

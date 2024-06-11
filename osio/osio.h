@@ -10,6 +10,7 @@
 #define stdout (1)
 #define stderr (2)
 
+
 u0 io_prints(hstr *str);
 
 u0 io_printu64(u64 value);

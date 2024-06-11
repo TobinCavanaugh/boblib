@@ -18,5 +18,7 @@ u64 rnd_u64R(u64 min, u64 max);
 
 f128 rnd_f128();
 
+i64 rnd_i64R(i64 min, i64 max);
+
 
 #endif //RND_H

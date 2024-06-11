@@ -4,6 +4,12 @@
 
 #include "mat.h"
 
+
+i64 mat_absi(i64 x) {
+    if (x < 0) { x *= -1; }
+    return x;
+}
+
 /// Calculates the power of the base to the exponent
 /// \param base The base value
 /// \param exp The exponent
@@ -12,6 +18,7 @@
 u64 mat_powu64(u64 base, u64 exp) {
     u64 result = 1;
 
+    //TODO Duffs device good application??
     while (true) {
         if (exp & 1) {
             u64 tmp = result * base;
